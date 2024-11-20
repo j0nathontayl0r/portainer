@@ -1,0 +1,258 @@
+version: "3.9"
+
+services:
+  tailscale-arrs:
+    image: tailscale/tailscale:latest # Image to be used
+    container_name: tailscale-arrs # Name for local container management
+    hostname: arrs # Name used within your Tailscale environment
+    environment:
+      - TS_AUTHKEY=$TS_KEY
+      - TS_STATE_DIR=/var/lib/tailscale
+      #- TS_SERVE_CONFIG=/config/serve.json # Tailsacale Serve configuration to expose the web interface on your local Tailnet - remove this line if not required
+      - TS_USERSPACE=false
+      - TS_EXTRA_ARGS=--ssh
+    volumes:
+      - /docker_config/arrs:/config
+      - /mnt:/data
+      - /docker_config/incomplete-downloads:/incomplete-downloads
+      - /docker_config/arrs-state/state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
+    cap_add:
+      - net_admin # Tailscale requirement
+      - sys_module # Tailscale requirement
+    ports:
+      - 0.0.0.0:8383:8383 # SABNZBD
+      - 0.0.0.0:9393:9393 # SABNZBD
+      - 0.0.0.0:8989:8989 # SONARR
+      - 0.0.0.0:7878:7878 # RADARR
+      - 0.0.0.0:8191:8191 # FLARESOLVERR
+      - 0.0.0.0:7575:7575 # HOMARR
+      - 0.0.0.0:5055:5055 # OVERSEERR
+      - 0.0.0.0:8181:8181 # TAUTULLI
+      - 0.0.0.0:9696:9696 # PROWLARR
+      - 0.0.0.0:81:81     # NGINXPROXYMANAGER
+      - 0.0.0.0:80:80     # NGINXPROXYMANAGER
+      - 0.0.0.0:443:443   # NGINXPROXYMANAGER
+
+    # If any DNS issues arise, use your preferred DNS provider by uncommenting the config below
+    # dns:
+    #   - 1.1.1.1
+    healthcheck:
+      test: ["CMD", "tailscale", "status"] # Check if Tailscale is running
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 10s # Time to wait before starting health checks
+    restart: always
+
+  sabnzbd:
+    network_mode: service:tailscale-arrs
+    image: ghcr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
+    volumes:
+      - /docker_config/sabnzbd:/config
+      - /mnt:/data
+      - /docker_config/incomplete-downloads:/incomplete-downloads
+    restart: unless-stopped
+    depends_on:
+      - tailscale-arrs
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    network_mode: service:tailscale-arrs
+    container_name: sonarr
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
+    volumes:
+      - /docker_config/sonarr:/config
+      - /docker_config/incomplete-downloads:/incomplete-downloads
+      - /mnt:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "Sonarr"] # Check if Sonarr process is running
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 30s # Time to wait before starting health checks
+    depends_on:
+      - tailscale-arrs
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    network_mode: service:tailscale-arrs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /docker_config/watchtower:/config
+    command: --interval 86400 --debug
+    restart: unless-stopped
+    environment:
+      - TZ=Australia/Brisbane
+    depends_on:
+      - tailscale-arrs
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    network_mode: service:tailscale-arrs
+    container_name: radarr
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
+    volumes:
+     - /mnt:/data
+     - /docker_config/radarr:/config
+     - /docker_config/incomplete-downloads:/incomplete-downloads
+    restart: unless-stopped
+    depends_on:
+      - tailscale-arrs
+
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    network_mode: service:tailscale-arrs
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Australia/Brisbane
+    restart: unless-stopped
+    depends_on:
+      - tailscale-arrs
+
+  unpackerr:
+    image: golift/unpackerr
+    network_mode: service:tailscale-arrs
+    container_name: unpackerr
+    volumes:
+      # You need at least this one volume mapped so Unpackerr can find your files to extract.
+      # Make sure this matches your Starr apps; the folder mount (/downloads or /data) should be identical.
+     - /mnt:/data
+     - /docker_config/unpackerr:/config
+    restart: unless-stopped
+    # Get the user:group correct so unpackerr can read and write to your files.
+    #user: 1000:1000
+    # What you see below are defaults for this compose. You only need to modify things specific to your environment.
+    # Remove apps and feature configs you do not use or need.
+    # ie. Remove all lines that begin with UN_CMDHOOK, UN_WEBHOOK, UN_FOLDER, UN_WEBSERVER, and other apps you do not use.
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
+      # General config
+      - UN_DEBUG=false
+      - UN_LOG_FILE=
+      - UN_LOG_FILES=10
+      - UN_LOG_FILE_MB=10
+      - UN_INTERVAL=2m
+      - UN_START_DELAY=1m
+      - UN_RETRY_DELAY=5m
+      - UN_MAX_RETRIES=3
+      - UN_PARALLEL=1
+      - UN_FILE_MODE=0644
+      - UN_DIR_MODE=0755
+      # Sonarr Config
+      - UN_SONARR_0_URL=https://sonarr.jonny.blue
+      - UN_SONARR_0_API_KEY=3de12920aea049608736ec8b5a94590c
+      - UN_SONARR_0_PATHS_0=/data/complete/
+      - UN_SONARR_0_PROTOCOLS=torrent,usenet
+      - UN_SONARR_0_TIMEOUT=10s
+      - UN_SONARR_0_DELETE_ORIG=false
+      - UN_SONARR_0_DELETE_DELAY=5m
+      # Radarr Config
+      - UN_RADARR_0_URL=https://radarr.jonny.blue
+      - UN_RADARR_0_API_KEY=f8c90c8f007f4ff895087beb0e4b36d5
+      - UN_RADARR_0_PATHS_0=/data/complete/
+      - UN_RADARR_0_PROTOCOLS=torrent,usenet
+      - UN_RADARR_0_TIMEOUT=10s
+      - UN_RADARR_0_DELETE_ORIG=false
+      - UN_RADARR_0_DELETE_DELAY=5m
+      # Folder Config
+      - UN_FOLDER_0_PATH=/data/complete/
+      - UN_FOLDER_0_EXTRACT_PATH=/data/complete/
+      - UN_FOLDER_0_DELETE_AFTER=10m
+      - UN_FOLDER_0_DELETE_ORIGINAL=false
+      - UN_FOLDER_0_DELETE_FILES=false
+      - UN_FOLDER_0_MOVE_BACK=true
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - tailscale-arrs
+
+  homarr:
+    container_name: homarr
+    network_mode: service:tailscale-arrs
+    image: ghcr.io/ajnart/homarr:latest
+    restart: unless-stopped
+    environment:
+      - TZ=Australia/Brisbane
+      - PUID=1005
+      - PGID=1005
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
+      - /docker_config/homarr/:/app/data/configs
+      - /docker_config/homarr-icons/:/app/public/icons
+      - /docker_config/homarr-data/:/data
+    depends_on:
+      - tailscale-arrs
+
+  overseerr:
+    image: sctx/overseerr:latest
+    network_mode: service:tailscale-arrs
+    container_name: overseerr
+    environment:
+      - LOG_LEVEL=debug
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
+    volumes:
+      - /docker_config/overseerr:/app/config
+
+    restart: unless-stopped
+    depends_on:
+      - tailscale-arrs
+
+  tautulli:
+    image: ghcr.io/tautulli/tautulli
+    network_mode: service:tailscale-arrs
+    container_name: tautulli
+    restart: unless-stopped
+    volumes:
+      - /docker_config/tautulli:/config
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
+    depends_on:
+      - tailscale-arrs
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    network_mode: service:tailscale-arrs
+    container_name: prowlarr
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
+    volumes:
+      - /docker_config/prowlarr:/config
+    restart: unless-stopped
+    depends_on:
+      - tailscale-arrs
+
+  nginxproxymanager:
+    network_mode: service:tailscale-arrs
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx
+    volumes:
+      - /docker_config/nginx:/data
+      - /docker_config/letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+    depends_on:
+      - tailscale-arrs
