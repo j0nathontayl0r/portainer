@@ -159,7 +159,7 @@ services:
       - UN_DIR_MODE=0755
       # Sonarr Config
       - UN_SONARR_0_URL=https://sonarr.jonny.blue
-      - UN_SONARR_0_API_KEY=3de12920aea049608736ec8b5a94590c
+      - UN_SONARR_0_API_KEY=$UN_SONARR_0_API_KEY
       - UN_SONARR_0_PATHS_0=/data/complete/
       - UN_SONARR_0_PROTOCOLS=torrent,usenet
       - UN_SONARR_0_TIMEOUT=10s
@@ -167,7 +167,7 @@ services:
       - UN_SONARR_0_DELETE_DELAY=5m
       # Radarr Config
       - UN_RADARR_0_URL=https://radarr.jonny.blue
-      - UN_RADARR_0_API_KEY=f8c90c8f007f4ff895087beb0e4b36d5
+      - UN_RADARR_0_API_KEY=$UN_RADARR_0_API_KEY
       - UN_RADARR_0_PATHS_0=/data/complete/
       - UN_RADARR_0_PROTOCOLS=torrent,usenet
       - UN_RADARR_0_TIMEOUT=10s
