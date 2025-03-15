@@ -53,7 +53,15 @@ services:
       - /docker_config/incomplete-downloads:/incomplete-downloads
     restart: unless-stopped
     depends_on:
-      - tailscale-deluge
+      tailscale-deluge:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: curl icanhazip.com && grep $ExitNodeIPAddress && exit 1 || echo "ERROR healthcheck failed" && exit 0
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   watchtower:
     image: containrrr/watchtower:latest
@@ -66,7 +74,9 @@ services:
     environment:
       - TZ=Australia/Brisbane
     depends_on:
-      - tailscale-deluge
+      tailscale-deluge:
+        condition: service_healthy
+        restart: true
 
 #  qbittorrent:
 #    image: lscr.io/linuxserver/qbittorrent:latest
@@ -84,4 +94,6 @@ services:
 #      - /docker_config/incomplete-downloads:/incomplete-downloads
 #    restart: unless-stopped
 #    depends_on:
-#      - tailscale-deluge
+#      tailscale-deluge:
+#        condition: service_healthy
+#        restart: true
