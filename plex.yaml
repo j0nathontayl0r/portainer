@@ -59,7 +59,6 @@ services:
       - PIHOLE_UID=1005
       - PIHOLE_GID=1005
       - TZ="Australia/Brisbane"
-      - FTLCONF_webserver_api_password='$PIHOLE_WEBPASSWORD'
     # Volumes store your data between container upgrades
     volumes:
       - '/docker_config/pihole:/etc/pihole'
