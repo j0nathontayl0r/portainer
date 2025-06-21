@@ -28,6 +28,10 @@ services:
       - 0.0.0.0:32412:32412/udp
       - 0.0.0.0:32413:32413/udp
       - 0.0.0.0:32414:32414/udp
+      - 0.0.0.0:53:53/tcp # Pihole
+      - 0.0.0.0:53:53/udp # Pihole
+      - 0.0.0.0:80:80/tcp # Pihole Web Interface
+      - 0.0.0.0:443:443/tcp # Pihole Web Interface HTTPS
 
   plex:
     container_name: plex
@@ -36,7 +40,7 @@ services:
     restart: unless-stopped
     environment:
       - TZ=Australia/Brisbane
-      - PLEX_CLAIM=claim-my8UMCgsJ-bnPYWfYYp3
+      - PLEX_CLAIM=$PLEX_CLAIM
       - ADVERTISE_IP=http://192.168.1.103:32400/
     volumes:
       - /docker_config/plex:/config
@@ -44,6 +48,26 @@ services:
       - /docker_config/plex-transcode:/transcode
     depends_on:
       - tailscale-plex
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:2025.06.2
+    network_mode: service:tailscale-plex
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - PIHOLE_UID=1005
+      - PIHOLE_GID=1005
+      - TZ="Australia/Brisbane"
+      - FTLCONF_webserver_api_password='$PIHOLE_WEBPASSWORD'
+    # Volumes store your data between container upgrades
+    volumes:
+      - '/docker_config/pihole:/etc/pihole'
+    cap_add:
+      - NET_ADMIN
+      - CAP_SYS_TIME
+      - CAP_SYS_NICE
+    restart: unless-stopped
 
   watchtower:
     image: containrrr/watchtower:latest
