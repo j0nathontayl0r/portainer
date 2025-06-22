@@ -62,6 +62,7 @@ services:
     # Volumes store your data between container upgrades
     volumes:
       - '/docker_config/pihole:/etc/pihole'
+      - '/root/.acme.sh/pihole.jonny.blue_ecc:/etc/letsencrypt'
     cap_add:
       - NET_ADMIN
       - CAP_SYS_TIME
