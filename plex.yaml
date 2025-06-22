@@ -67,6 +67,7 @@ services:
       - NET_ADMIN
       - CAP_SYS_TIME
       - CAP_SYS_NICE
+      - SYS_TIME
     restart: unless-stopped
 
   watchtower:
