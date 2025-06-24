@@ -51,6 +51,7 @@ services:
 
   pihole:
     container_name: pihole
+    shm_size: '2gb'
     image: pihole/pihole:2025.06.2
     network_mode: service:tailscale-plex
     environment:
