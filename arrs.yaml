@@ -26,7 +26,6 @@ services:
       - 0.0.0.0:8989:8989 # SONARR
       - 0.0.0.0:7878:7878 # RADARR
       - 0.0.0.0:8191:8191 # FLARESOLVERR
-      - 0.0.0.0:7575:7575 # HOMARR
       - 0.0.0.0:5055:5055 # OVERSEERR
       - 0.0.0.0:8181:8181 # TAUTULLI
       - 0.0.0.0:9696:9696 # PROWLARR
@@ -187,23 +186,6 @@ services:
     depends_on:
       - tailscale-arrs
 
-  homarr:
-    container_name: homarr
-    network_mode: service:tailscale-arrs
-    image: ghcr.io/ajnart/homarr:latest
-    restart: unless-stopped
-    environment:
-      - TZ=Australia/Brisbane
-      - PUID=1005
-      - PGID=1005
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
-      - /docker_config/homarr/:/app/data/configs
-      - /docker_config/homarr-icons/:/app/public/icons
-      - /docker_config/homarr-data/:/data
-    depends_on:
-      - tailscale-arrs
-
   overseerr:
     image: sctx/overseerr:latest
     network_mode: service:tailscale-arrs
@@ -215,7 +197,6 @@ services:
       - TZ=Australia/Brisbane
     volumes:
       - /docker_config/overseerr:/app/config
-
     restart: unless-stopped
     depends_on:
       - tailscale-arrs
@@ -252,6 +233,10 @@ services:
     network_mode: service:tailscale-arrs
     image: jc21/nginx-proxy-manager:latest
     container_name: nginx
+    environment:
+      - PUID=1005
+      - PGID=1005
+      - TZ=Australia/Brisbane
     volumes:
       - /docker_config/nginx:/data
       - /docker_config/letsencrypt:/etc/letsencrypt

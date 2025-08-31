@@ -23,7 +23,6 @@ services:
       - sys_module # Tailscale requirement
     ports:
       - 0.0.0.0:58846:58846 #optional
-      - 0.0.0.0:3456:3456 # Todo App
       - 0.0.0.0:8112:8112
       - 0.0.0.0:6881:6881
       - 0.0.0.0:6881:6881/udp
@@ -57,7 +56,7 @@ services:
         condition: service_healthy
         restart: true
     healthcheck:
-      test: curl icanhazip.com && grep $ExitNodeIPAddress && exit 1 || echo "ERROR healthcheck failed" && exit 0
+      test: if [ "$(curl -s icanhazip.com)" == "$ExitNodeIPAddress" ]; then exit 0; else echo "ERROR healthcheck failed"; exit 1; fi
       interval: 10s
       timeout: 10s
       retries: 3
@@ -77,23 +76,3 @@ services:
       tailscale-deluge:
         condition: service_healthy
         restart: true
-
-#  qbittorrent:
-#    image: lscr.io/linuxserver/qbittorrent:latest
-#    network_mode: service:tailscale-deluge
-#    container_name: qbittorrent
-#    environment:
-#      - TZ=Australia/Brisbane
-#      - PUID=1005
-#      - PGID=1005
-#      - WEBUI_PORT=8112
-#      - TORRENTING_PORT=6881
-#    volumes:
-#      - /docker_config/deluge:/config
-#      - /mnt:/data
-#      - /docker_config/incomplete-downloads:/incomplete-downloads
-#    restart: unless-stopped
-#    depends_on:
-#      tailscale-deluge:
-#        condition: service_healthy
-#        restart: true
