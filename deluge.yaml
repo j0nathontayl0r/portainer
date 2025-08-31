@@ -15,7 +15,7 @@ services:
     volumes:
       - /docker_config/deluge:/config
       - /mnt:/data
-      - /docker_config/incomplete-downloads:/incomplete-downloads/deluge
+      - /docker_config/incomplete-downloads:/incomplete-downloads
       - /docker_config/deluge-state/state:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
     cap_add:
@@ -50,7 +50,7 @@ services:
     volumes:
       - /docker_config/deluge:/config
       - /mnt:/data
-      - /docker_config/incomplete-downloads:/incomplete-downloads/deluge
+      - /docker_config/incomplete-downloads:/incomplete-downloads
     restart: unless-stopped
     depends_on:
       tailscale-deluge:
