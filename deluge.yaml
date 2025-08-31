@@ -15,7 +15,7 @@ services:
     volumes:
       - /docker_config/deluge:/config
       - /mnt:/data
-      - /docker_config/incomplete-downloads:/incomplete-downloads
+      - /docker_config/incomplete-downloads:/incomplete-downloads/deluge
       - /docker_config/deluge-state/state:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
     cap_add:
@@ -50,7 +50,7 @@ services:
     volumes:
       - /docker_config/deluge:/config
       - /mnt:/data
-      - /docker_config/incomplete-downloads:/incomplete-downloads
+      - /docker_config/incomplete-downloads:/incomplete-downloads/deluge
     restart: unless-stopped
     depends_on:
       tailscale-deluge:
@@ -77,23 +77,3 @@ services:
       tailscale-deluge:
         condition: service_healthy
         restart: true
-
-#  qbittorrent:
-#    image: lscr.io/linuxserver/qbittorrent:latest
-#    network_mode: service:tailscale-deluge
-#    container_name: qbittorrent
-#    environment:
-#      - TZ=Australia/Brisbane
-#      - PUID=1005
-#      - PGID=1005
-#      - WEBUI_PORT=8112
-#      - TORRENTING_PORT=6881
-#    volumes:
-#      - /docker_config/deluge:/config
-#      - /mnt:/data
-#      - /docker_config/incomplete-downloads:/incomplete-downloads
-#    restart: unless-stopped
-#    depends_on:
-#      tailscale-deluge:
-#        condition: service_healthy
-#        restart: true
