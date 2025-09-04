@@ -206,7 +206,7 @@ services:
       - tailscale-arrs
 
   homarr2:
-    container_name: homarr
+    container_name: homarr2
     network_mode: service:tailscale-arrs
     image: ghcr.io/homarr-labs/homarr:latest
     restart: unless-stopped
