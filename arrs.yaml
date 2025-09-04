@@ -26,7 +26,6 @@ services:
       - 0.0.0.0:8989:8989 # SONARR
       - 0.0.0.0:7878:7878 # RADARR
       - 0.0.0.0:8191:8191 # FLARESOLVERR
-      - 0.0.0.0:7575:7575 # HOMARR
       - 0.0.0.0:5055:5055 # OVERSEERR
       - 0.0.0.0:8181:8181 # TAUTULLI
       - 0.0.0.0:9696:9696 # PROWLARR
@@ -217,8 +216,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
       - /docker_config/homarr/:/appdata
-    depends_on:
-      - tailscale-arrs
+    ports:
+      - "7575:7575"
 
   overseerr:
     image: sctx/overseerr:latest
