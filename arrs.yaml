@@ -26,7 +26,7 @@ services:
       - 0.0.0.0:8989:8989 # SONARR
       - 0.0.0.0:7878:7878 # RADARR
       - 0.0.0.0:7575:7575 # HOMARR
-      - 0.0.0.0:7576:7575 # HOMARR
+      - 0.0.0.0:7576:7576 # HOMARR
       - 0.0.0.0:8191:8191 # FLARESOLVERR
       - 0.0.0.0:5055:5055 # OVERSEERR
       - 0.0.0.0:8181:8181 # TAUTULLI
@@ -215,7 +215,7 @@ services:
       - TZ=Australia/Brisbane
       - PUID=1005
       - PGID=1005
-      - PORT=7575
+      - PORT=7576
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
       - /docker_config/homarr/:/appdata
