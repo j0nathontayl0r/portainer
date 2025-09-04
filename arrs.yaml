@@ -217,9 +217,7 @@ services:
       - PGID=1005
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
-      - /docker_config/homarr/:/app/data/configs
-      - /docker_config/homarr-icons/:/app/public/icons
-      - /docker_config/homarr-data/:/data
+      - /docker_config/homarr/:/appdata
     depends_on:
       - tailscale-arrs
 
