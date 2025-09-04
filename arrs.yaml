@@ -210,7 +210,6 @@ services:
     image: ghcr.io/homarr-labs/homarr:latest
     restart: unless-stopped
     environment:
-      - SECRET_ENCRYPTION_KEY=$HOMARR_ENCRYPTION_KEY
       - TZ=Australia/Brisbane
       - PUID=1005
       - PGID=1005
