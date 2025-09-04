@@ -221,8 +221,6 @@ services:
       - /docker_config/homarr-data/:/data
     depends_on:
       - tailscale-arrs
-    ports:
-      - '7676:7676'
 
   overseerr:
     image: sctx/overseerr:latest
