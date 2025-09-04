@@ -26,6 +26,7 @@ services:
       - 0.0.0.0:8989:8989 # SONARR
       - 0.0.0.0:7878:7878 # RADARR
       - 0.0.0.0:7575:7575 # HOMARR
+      - 0.0.0.0:7576:7575 # HOMARR
       - 0.0.0.0:8191:8191 # FLARESOLVERR
       - 0.0.0.0:5055:5055 # OVERSEERR
       - 0.0.0.0:8181:8181 # TAUTULLI
@@ -206,6 +207,7 @@ services:
 
   homarr2:
     container_name: homarr2
+    network_mode: service:tailscale-arrs
     image: ghcr.io/homarr-labs/homarr:latest
     restart: unless-stopped
     environment:
@@ -216,8 +218,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
       - /docker_config/homarr/:/appdata
-    ports:
-      - "7576:7575"
+    depends_on:
+      - tailscale-arrs
 
   overseerr:
     image: sctx/overseerr:latest
