@@ -215,6 +215,7 @@ services:
       - TZ=Australia/Brisbane
       - PUID=1005
       - PGID=1005
+      - PORT=7576
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
       - /docker_config/homarr/:/appdata
