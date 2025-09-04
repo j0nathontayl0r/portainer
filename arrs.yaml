@@ -188,22 +188,22 @@ services:
     depends_on:
       - tailscale-arrs
 
-  homarr:
-    container_name: homarr
-    network_mode: service:tailscale-arrs
-    image: ghcr.io/ajnart/homarr:latest
-    restart: unless-stopped
-    environment:
-      - TZ=Australia/Brisbane
-      - PUID=1005
-      - PGID=1005
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
-      - /docker_config/homarr/:/app/data/configs
-      - /docker_config/homarr-icons/:/app/public/icons
-      - /docker_config/homarr-data/:/data
-    depends_on:
-      - tailscale-arrs
+  #homarr:
+  #  container_name: homarr
+  #  network_mode: service:tailscale-arrs
+  #  image: ghcr.io/ajnart/homarr:latest
+  #  restart: unless-stopped
+  #  environment:
+  #    - TZ=Australia/Brisbane
+  #    - PUID=1005
+  #    - PGID=1005
+  #  volumes:
+  #    - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
+  #    - /docker_config/homarr/:/app/data/configs
+  #    - /docker_config/homarr-icons/:/app/public/icons
+  #    - /docker_config/homarr-data/:/data
+  #  depends_on:
+  #    - tailscale-arrs
 
   homarr2:
     container_name: homarr2
