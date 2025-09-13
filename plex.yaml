@@ -1,9 +1,9 @@
 version: "3.9"
 services:
-  tailscale-plex:
+  tailscale-arrs:
     image: tailscale/tailscale:latest # Image to be used
-    container_name: tailscale-plex # Name for local container management
-    hostname: plex # Name used within your Tailscale environment
+    container_name: tailscale-arrs # Name for local container management
+    hostname: arrs # Name used within your Tailscale environment
     environment:
       - TS_AUTHKEY=$TS_KEY
       - TS_STATE_DIR=/var/lib/tailscale
@@ -11,27 +11,39 @@ services:
       - TS_USERSPACE=false
       - TS_EXTRA_ARGS=--ssh
     volumes:
-      - /docker_config/plex:/config
+      - /docker_config/arrs:/config
       - /mnt:/data
       - /docker_config/incomplete-downloads:/incomplete-downloads
-      - /docker_config/plex-state/state:/var/lib/tailscale
+      - /docker_config/arrs-state/state:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun # Network configuration for Tailscale to work
     cap_add:
       - net_admin # Tailscale requirement
       - sys_module # Tailscale requirement
     ports:
-      - 0.0.0.0:32400:32400
-      - 0.0.0.0:8324:8324
-      - 0.0.0.0:32469:32469
-      - 0.0.0.0:1900:1900/udp
-      - 0.0.0.0:32410:32410/udp
-      - 0.0.0.0:32412:32412/udp
-      - 0.0.0.0:32413:32413/udp
-      - 0.0.0.0:32414:32414/udp
-      - 0.0.0.0:53:53/tcp # Pihole
-      - 0.0.0.0:53:53/udp # Pihole
-      - 0.0.0.0:80:80/tcp # Pihole Web Interface
-      - 0.0.0.0:443:443/tcp # Pihole Web Interface HTTPS
+      - 0.0.0.0:8383:8383 # SABNZBD
+      - 0.0.0.0:9393:9393 # SABNZBD
+      - 0.0.0.0:8989:8989 # SONARR
+      - 0.0.0.0:7878:7878 # RADARR
+      - 0.0.0.0:8191:8191 # FLARESOLVERR
+      - 0.0.0.0:5055:5055 # OVERSEERR
+      - 0.0.0.0:8181:8181 # TAUTULLI
+      - 0.0.0.0:9696:9696 # PROWLARR
+      - 0.0.0.0:81:81     # NGINXPROXYMANAGER
+      - 0.0.0.0:80:80     # NGINXPROXYMANAGER
+      - 0.0.0.0:443:443   # NGINXPROXYMANAGER
+      # Uncomment the below if using Pi-hole as your DHCP Server
+      #- "67:67/udp"
+    # If any DNS issues arise, use your preferred DNS provider by uncommenting the config below
+    # dns:
+    #   - 1.1.1.1
+    healthcheck:
+      test: ["CMD", "tailscale", "status"] # Check if Tailscale is running
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 10s # Time to wait before starting health checks
+    restart: always
+# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
 
   plex:
     container_name: plex
@@ -39,6 +51,9 @@ services:
     image: plexinc/pms-docker
     restart: unless-stopped
     environment:
+        environment:
+      - PUID=1005
+      - PGID=1005
       - TZ=Australia/Brisbane
       - PLEX_CLAIM=$PLEX_CLAIM
       - ADVERTISE_IP=http://192.168.1.103:32400/
