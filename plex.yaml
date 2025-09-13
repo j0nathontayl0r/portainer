@@ -1,8 +1,8 @@
 version: "3.9"
 services:
-  tailscale-arrs:
+  tailscale-plex:
     image: tailscale/tailscale:latest # Image to be used
-    container_name: tailscale-arrs # Name for local container management
+    container_name: tailscale-plex # Name for local container management
     hostname: arrs # Name used within your Tailscale environment
     environment:
       - TS_AUTHKEY=$TS_KEY
@@ -30,6 +30,13 @@ services:
       - 0.0.0.0:81:81     # NGINXPROXYMANAGER
       - 0.0.0.0:80:80     # NGINXPROXYMANAGER
       - 0.0.0.0:443:443   # NGINXPROXYMANAGER
+    healthcheck:
+      test: ["CMD", "tailscale", "status"] # Check if Tailscale is running
+      interval: 1m # How often to perform the check
+      timeout: 10s # Time to wait for the check to succeed
+      retries: 3 # Number of retries before marking as unhealthy
+      start_period: 10s # Time to wait before starting health checks
+    restart: always
 
   plex:
     container_name: plex
@@ -37,7 +44,6 @@ services:
     image: plexinc/pms-docker
     restart: unless-stopped
     environment:
-        environment:
       - PUID=1005
       - PGID=1005
       - TZ=Australia/Brisbane
@@ -52,7 +58,7 @@ services:
 
   pihole:
     container_name: pihole
-    shm_size: '2gb'
+    shm_size: '4gb'
     image: pihole/pihole:2025.06.2
     network_mode: service:tailscale-plex
     environment:
@@ -60,7 +66,7 @@ services:
       - PGID=1005
       - PIHOLE_UID=1005
       - PIHOLE_GID=1005
-      - TZ="Australia/Brisbane"
+      - TZ=Australia/Brisbane
     # Volumes store your data between container upgrades
     volumes:
       - '/docker_config/pihole:/etc/pihole'
