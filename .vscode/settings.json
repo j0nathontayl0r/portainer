@@ -1,0 +1,6 @@
+{
+  "yaml.schemas": {
+    "file:///home/vscode/.vscode-server/extensions/docsmsft.docs-yaml-1.0.4/dist/toc.schema.json": "/toc\\.yml/i",
+    "https://raw.githubusercontent.com/compose-spec/compose-go/master/schema/compose-spec.json": "file:///c%3A/Users/micro/repos/portainer/plex.yaml"
+  }
+}
